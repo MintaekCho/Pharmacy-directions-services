@@ -2,9 +2,12 @@ package com.example.fastproject.pharmacy.repository
 
 import com.example.fastproject.AbstractintegrationContainerBaseTest
 import com.example.fastproject.pharmacy.entity.Pharmacy
+import org.apache.tomcat.jni.Local
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import spock.lang.Specification
+
+import java.time.LocalDateTime
 
 class PharmacyRepositoryTest extends AbstractintegrationContainerBaseTest {
 
@@ -59,5 +62,26 @@ class PharmacyRepositoryTest extends AbstractintegrationContainerBaseTest {
 
         then:
         result.size() == 1
+    }
+
+    def "Auditable 등록"() {
+        given:
+        LocalDateTime now = LocalDateTime.now()
+        String address = "서울 특별시 성동구"
+        String name = "은혜 약국"
+
+        def pharmacy = Pharmacy.builder()
+                .pharmacyAddress(address)
+                .pharmacyName(name)
+                .build()
+
+        when:
+        pharmacyRepository.save(pharmacy)
+
+
+        then:
+        def result = pharmacyRepository.findAll()
+        result.get(0).getCreatedAt().isAfter(now)
+        result.get(0).getModifiedAt().isAfter(now)
     }
 }
